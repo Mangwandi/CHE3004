@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pneumatic Conveying System Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        input {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .design-status {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .status-ok {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .detailed-results {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .download-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pneumatic Conveying System Calculator</h1>
+        
+        <div class="input-grid">
+            <div class="input-group">
+                <label for="massFlowRate">Mass Transfer Rate (kg/h):</label>
+                <input type="number" id="massFlowRate" step="0.01" value="1000">
+            </div>
+            
+            <div class="input-group">
+                <label for="particleDiameter">Particle Diameter (mm):</label>
+                <input type="number" id="particleDiameter" step="0.001" value="0.5">
+            </div>
+            
+            <div class="input-group">
+                <label for="particleDensity">Particle Density (kg/m³):</label>
+                <input type="number" id="particleDensity" step="0.01" value="1500">
+            </div>
+            
+            <div class="input-group">
+                <label for="horizontalLength">Horizontal Pipe Length (m):</label>
+                <input type="number" id="horizontalLength" step="0.01" value="50">
+            </div>
+            
+            <div class="input-group">
+                <label for="verticalLength">Vertical Pipe Length (m):</label>
+                <input type="number" id="verticalLength" step="0.01" value="10">
+            </div>
+            
+            <div class="input-group">
+                <label for="pipeDiameter">Pipe Diameter (mm):</label>
+                <input type="number" id="pipeDiameter" step="0.1" value="100">
+            </div>
+            
+            <div class="input-group">
+                <label for="fluidViscosity">Fluid Viscosity (Pa·s):</label>
+                <input type="number" id="fluidViscosity" step="0.000001" value="0.000018">
+            </div>
+            
+            <div class="input-group">
+                <label for="fluidDensity">Fluid Density (kg/m³):</label>
+                <input type="number" id="fluidDensity" step="0.01" value="1.2">
+            </div>
+            
+            <div class="input-group">
+                <label for="numberBends">Number of Bends:</label>
+                <input type="number" id="numberBends" step="1" value="2">
+            </div>
+            
+            <div class="input-group">
+                <label for="targetPressure">Target Pressure Drop (bar):</label>
+                <input type="number" id="targetPressure" step="0.01" value="0.5">
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button onclick="calculate()">Calculate System</button>
+            <button class="download-btn" onclick="downloadResults()">Download Results</button>
+        </div>
+        
+        <div class="results-grid">
+            <div class="result-item">
+                <div class="result-label">Saltation Velocity:</div>
+                <div class="result-value" id="saltationVelocity">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Superficial Velocity:</div>
+                <div class="result-value" id="superficialVelocity">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Horizontal Pressure Drop:</div>
+                <div class="result-value" id="pressureDropHorizontal">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Vertical Pressure Drop:</div>
+                <div class="result-value" id="pressureDropVertical">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Bends Pressure Drop:</div>
+                <div class="result-value" id="pressureDropBends">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Total Pressure Drop:</div>
+                <div class="result-value" id="pressureDropTotal">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Solids Loading:</div>
+                <div class="result-value" id="solidsLoading">-</div>
+            </div>
+        </div>
+        
+        <div id="designStatus" class="design-status" style="display: none;"></div>
+        
+        <div id="detailedResults" class="detailed-results" style="display: none;"></div>
+    </div>
+
+    <script>
+        const g = 9.81; // gravitational acceleration (m/s^2)
+        let lastCalculationResults = '';
+
+        function calculate() {
+            try {
+                // Get input values
+                const massTransferRate = parseFloat(document.getElementById('massFlowRate').value);
+                const particleSize = parseFloat(document.getElementById('particleDiameter').value);
+                const particleDensity = parseFloat(document.getElementById('particleDensity').value);
+                const pipeLengthHorizontal = parseFloat(document.getElementById('horizontalLength').value);
+                const pipeLengthVertical = parseFloat(document.getElementById('verticalLength').value);
+                const pipeDiameter = parseFloat(document.getElementById('pipeDiameter').value);
+                const mu = parseFloat(document.getElementById('fluidViscosity').value);
+                const rhoF = parseFloat(document.getElementById('fluidDensity').value);
+                const N = parseInt(document.getElementById('numberBends').value);
+                const targetPressure = parseFloat(document.getElementById('targetPressure').value);
+
+                // Convert units
+                const D = pipeDiameter * 0.001; // pipe diameter in metres
+                const dp = particleSize * 0.001; // particle diameter in metres
+                const rhoP = particleDensity; // particle density
+                const Mp = massTransferRate / 3600; // solids delivery rate in kg/s
+
+                // Calculate saltation velocity
+                const alpha = 1440 * dp + 1.96;
+                const beta = 1100 * dp + 2.5;
+                const USalt = Math.pow(4 * Mp * Math.pow(10, alpha) * Math.pow(g, 0.5 * beta) * Math.pow(D, 0.5 * beta - 2) / (Math.PI * rhoF), 1 / (beta + 1));
+
+                // Horizontal sections calculations
+                const Ufs = USalt * 1.5; // Fluid superficial gas velocity (m/s)
+                const Gm = 4 * Mp / (Math.PI * D * D); // solid flux
+                const Uph = Ufs * (1 - 0.0638 * Math.pow(dp, 0.3) * Math.pow(rhoP, 0.5)); // particle velocity horizontal
+                const eH = 1 - Gm / (rhoP * Uph); // voidage horizontal
+                const Ufh = Ufs / eH; // fluid velocity horizontal
+                const Rep = rhoF * dp * (Ufh - Uph) / mu; // particle Reynolds number
+                const fp = 3 / 8 * dragCoefficient(Rep) * (rhoF / rhoP) * (D / dp) * Math.pow((Ufh - Uph) / Uph, 2); // particle friction factor
+                const Re = rhoF * D * Ufh / mu; // fluid Reynolds number
+                const fg = 0.079 * Math.pow(Re, -0.25); // gas friction factor
+                const solidsLoading = Mp / (0.25*Math.PI * Math.pow(D, 2) *  rhoF * Ufs);
+
+                const gasAccelerationPressureLoss = 0.5 * eH * rhoF * Ufh * Ufh;
+                const solidsAccelerationPressureLoss = 0.5 * (1 - eH) * rhoP * Uph * Uph;
+                const gasFrictionPressureLoss = 2 * fg * rhoF * Ufs * Ufs * pipeLengthHorizontal / D;
+                const solidFrictionPressureLoss = 2 * fp * (1 - eH) * rhoP * Uph * Uph * pipeLengthHorizontal / D;
+                const pressureLossHorizontal = gasAccelerationPressureLoss + gasFrictionPressureLoss + solidFrictionPressureLoss + solidsAccelerationPressureLoss;
+
+                // Vertical sections calculations
+                const U = Ufs;
+                const UT = terminalVelocity(dp, rhoP, rhoF, mu);
+                const eV = solveVoidage(U, UT, Gm, rhoP);
+
+                const gasFrictionPressureLossV = 2 * fg * Ufs * Ufs * pipeLengthVertical / D;
+                const solidsFrictionPressureLossV = 0.057 * Gm * pipeLengthVertical * Math.sqrt(g / D);
+                const gasGravitationHeadLossV = rhoF * eV * g * pipeLengthVertical;
+                const solidsGravitationalHeadLossV = rhoP * (1 - eV) * g * pipeLengthVertical;
+                const pressureLossVertical = gasFrictionPressureLossV + solidsFrictionPressureLossV + gasGravitationHeadLossV + solidsGravitationalHeadLossV;
+
+                // Bends pressure loss
+                let pressureLossBends = 0;
+                if (N >= 1) {
+                    pressureLossBends = N * (pressureLossVertical / pipeLengthVertical) * 7.5;
+                }
+
+                // Total system pressure
+                const totalPressureLoss = pressureLossHorizontal + pressureLossVertical + pressureLossBends;
+
+                // Design gas flow rate
+                const designGasFlowRate = USalt * Math.PI * D * D * 0.25;
+                const totalPressureBars = totalPressureLoss / 100000;
+
+                let designStatus;
+                const statusElement = document.getElementById('designStatus');
+                if (totalPressureBars <= targetPressure) {
+                    if (totalPressureBars / targetPressure <= 0.8) {
+                        designStatus = "Design is OK: consider reducing pipe diameter slightly";
+                        statusElement.className = "design-status status-ok";
+                    } else {
+                        designStatus = "Design is OK";
+                        statusElement.className = "design-status status-ok";
+                    }
+                } else {
+                    designStatus = "Warning: The Pressure is too High! Consider increasing pipe diameter";
+                    statusElement.className = "design-status status-error";
+                }
+                // Update results display
+                document.getElementById('superficialVelocity').textContent = Ufs.toFixed(2) + ' m/s';
+                document.getElementById('saltationVelocity').textContent = USalt.toFixed(2) + ' m/s';
+                document.getElementById('pressureDropHorizontal').textContent = pressureLossHorizontal.toFixed(2) + ' Pa';
+                document.getElementById('pressureDropVertical').textContent = pressureLossVertical.toFixed(4) + ' Pa';
+                document.getElementById('pressureDropTotal').textContent = totalPressureLoss.toFixed(4) + ' Pa';
+                document.getElementById('pressureDropBends').textContent = pressureLossBends.toFixed(4) + ' Pa';
+                document.getElementById('solidsLoading').textContent = solidsLoading.toFixed(2);
+                
+                statusElement.textContent = designStatus;
+                statusElement.style.display = 'block';
+
+                // Generate detailed results
+                /* displayResults(USalt, USalt * 1.5, pressureLossHorizontal, pressureLossVertical, pressureLossBends, 
+                    totalPressureLoss, designGasFlowRate, N, pipeDiameter, gasFrictionPressureLoss, 
+                    solidFrictionPressureLoss, gasAccelerationPressureLoss, solidsAccelerationPressureLoss, 
+                    fg, fp, eH, Uph, gasFrictionPressureLossV, solidsFrictionPressureLossV, 
+                    gasGravitationHeadLossV, solidsGravitationalHeadLossV, eV, UT);
+                 */
+            } catch (error) {
+                alert('Error in calculation: ' + error.message);
+            }
+        }
+
+        function dragCoefficient(Rep) {
+            if (Rep < 1) {
+                return 24 / Rep;
+            } else if (Rep >= 1 && Rep < 500) {
+                return 18.5 * Math.pow(Rep, -0.6);
+            } else {
+                return 0.44;
+            }
+        }
+
+        function terminalVelocity(dp, rhoP, rhoF, mu) {
+            const Ar = Math.pow(dp, 3) * rhoF * (rhoP - rhoF) * g / (mu * mu);
+
+            // Newton-Raphson method to solve for Reynolds number
+            let Rep = 0.2; // initial guess
+            for (let i = 0; i < 1000; i++) {
+                const f = 24 * Rep * (1 + 0.173 * Math.pow(Rep, 0.657)) + 0.143 * Rep * Rep / (1 + 8710 * Math.pow(Rep, -1.09)) - 4 / 3 * Ar;
+                const df = 24 * (1 + 0.173 * Math.pow(Rep, 0.657)) + 24 * Rep * 0.173 * 0.657 * Math.pow(Rep, -0.343) +
+                          0.286 * Rep / (1 + 8710 * Math.pow(Rep, -1.09)) +
+                          0.143 * Rep * Rep * 8710 * (-1.09) * Math.pow(Rep, -2.09) / Math.pow(1 + 8710 * Math.pow(Rep, -1.09), 2);
+
+                const RepNew = Rep - f / df;
+                if (Math.abs(RepNew - Rep) < 0.0001) {
+                    Rep = RepNew;
+                    break;
+                }
+                Rep = RepNew;
+            }
+
+            return Rep * mu / (rhoF * dp);
+        }
+
+        function solveVoidage(U, UT, Gm, rhoP) {
+            // Newton-Raphson method to solve: e_v^2*UT-(UT+U+G/rhoP)*e_v+U = 0
+            let eV = 0.3; // initial guess
+            for (let i = 0; i < 1000; i++) {
+                const f = eV * eV * UT - (UT + U + Gm / rhoP) * eV + U;
+                const df = 2 * eV * UT - (UT + U + Gm / rhoP);
+
+                const eVNew = eV - f / df;
+                if (Math.abs(eVNew - eV) < 0.0001) {
+                    eV = eVNew;
+                    break;
+                }
+                eV = eVNew;
+            }
+            return eV;
+        }
+
+        function displayResults(USalt, Usf, pressureLossHorizontal, pressureLossVertical, pressureLossBends, 
+                               totalPressureLoss, designGasFlowRate, N, pipeDiameter, gasFrictionPressureLoss, 
+                               solidFrictionPressureLoss, gasAccelerationPressureLoss, solidsAccelerationPressureLoss,
+                               fg, fp, eH, Uph, gasFrictionPressureLossV, solidsFrictionPressureLossV, 
+                               gasGravitationalHeadLossV, solidsGravitationalHeadLossV, ev, UT) {
+            
+            let results = "";
+            results += " -----------------------Horizontal Section Calculations -----------\n";
+            results += " ----------------------------------------------------------------\n";
+            results += "                                                                 \n";
+            results += `The Gas friction loss in horizontal pipe           ${gasFrictionPressureLoss.toFixed(2)} Pa\n`;
+            results += `The solids friction loss in horizontal pipe        ${solidFrictionPressureLoss.toFixed(2)} Pa\n`;
+            results += `The solid acceleration pressure loss in            ${solidsAccelerationPressureLoss.toFixed(2)} Pa\n`;
+            results += `The gas acceleration pressure loss in              ${gasAccelerationPressureLoss.toFixed(2)} Pa\n`;
+            results += ` The gas friction factor is                        ${fg.toFixed(4)} -\n`;
+            results += ` The solids friction factor is                     ${fp.toFixed(4)} -\n`;
+            results += ` The particle velocity horizontal section is       ${Uph.toFixed(4)} m/s\n`;
+            results += ` The pipe voidage in horizontal section is         ${eH.toFixed(4)} -\n`;
+            results += "                                                                 \n";
+            results += " -----------------------Vertical Section Calculations -----------\n";
+            results += " ----------------------------------------------------------------\n";
+            results += "                                                                 \n";
+            results += `The Gas friction loss in vertical pipe             ${gasFrictionPressureLossV.toFixed(2)} Pa\n`;
+            results += `The solids friction loss in vertical pipe          ${solidsFrictionPressureLossV.toFixed(2)} Pa\n`;
+            results += `The solid static pressure head loss in vertical    ${solidsGravitationalHeadLossV.toFixed(2)} Pa\n`;
+            results += `The gas static head pressure loss in vertical      ${gasGravitationalHeadLossV.toFixed(2)} Pa\n`;
+            results += ` The pipe voidage in vertical section is           ${ev.toFixed(4)} -\n`;
+            results += ` The particle terminal velocity                    ${UT.toFixed(4)} -\n`;
+            results += " -----------------------Overall Design Parameters  -----------\n";
+            results += " ----------------------------------------------------------------\n";
+            results += "                                                                 \n";
+            results += `The Pipe diameter is                               ${pipeDiameter} mm\n`;
+            results += `The Saltation velocity is                          ${USalt.toFixed(2)} m/s\n`;
+            results += `The Design Superficial velocity is                 ${Usf.toFixed(2)} m/s\n`;
+            results += `The Pressure drop across horizontal sections is    ${pressureLossHorizontal.toFixed(2)} Pa\n`;
+            results += `The Pressure drop across vertical sections is      ${pressureLossVertical.toFixed(2)} Pa\n`;
+
+            if (N === 1) {
+                results += `The Pressure drop across the ${N} bend is             ${pressureLossBends.toFixed(2)} Pa\n`;
+            } else if (N > 1) {
+                results += `The Pressure drop across the ${N} bends is            ${pressureLossBends.toFixed(2)} Pa\n`;
+            } else {
+                results += "There are no bends in the system\n";
+            }
+
+            results += `The Total Pressure drop the entire system is       ${totalPressureLoss.toFixed(2)} Pa\n`;
+            results += `The Design gas flow rate is                        ${designGasFlowRate.toFixed(2)} m³/s\n`;
+
+            lastCalculationResults = results;
+            const resultsElement = document.getElementById('detailedResults');
+            resultsElement.textContent = results;
+            resultsElement.style.display = 'block';
+        }
+
+        function downloadResults() {
+            if (!lastCalculationResults) {
+                alert('Please calculate the system first before downloading results.');
+                return;
+            }
+
+            const blob = new Blob([lastCalculationResults], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pneumatic_conveying_results.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Initialize with default calculation
+        window.addEventListener('load', function() {
+            calculate();
+        });
+    </script>
+</body>
+</html>
