@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choking Velocity Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            line-height: 1.5;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        label {
+            flex: 1;
+            text-align: left;
+            margin-right: 10px;
+        }
+        input {
+            flex: 2;
+            padding: 8px;
+            font-size: 14px;
+            width: 100%;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .result-item {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 5px;
+        }
+        .result-item label {
+            min-width: 250px;
+            font-weight: bold;
+        }
+        .result-item span {
+            flex: 1;
+        }
+    </style>
+    <script>
+        function calculateChokingVelocity() {
+            // Get user inputs
+            const massTransferRate = parseFloat(document.getElementById('massTransferRate').value);
+            const particleSize = parseFloat(document.getElementById('particleSize').value);
+            const particleDensity = parseFloat(document.getElementById('particleDensity').value);
+            const pipeLength = parseFloat(document.getElementById('pipeLength').value);
+            const pipeDiameter = parseFloat(document.getElementById('pipeDiameter').value);
+            const fluidViscosity = parseFloat(document.getElementById('fluidViscosity').value);
+            const fluidDensity = parseFloat(document.getElementById('fluidDensity').value);
+
+            // Convert to meters
+            const D = pipeDiameter * 1e-3;
+            const d = particleSize * 1e-3;
+
+            // Calculate G
+            const G = (massTransferRate / 3600) * (1 / (0.25 * Math.PI * D ** 2));
+
+            // Solve for x1 using an iterative approach
+            const fn = (x1) => {
+                return fluidDensity ** 0.77 - 2250 * D * particleDensity ** 2 * (1 - x1) ** 2 * (x1 ** -4.7 - 1) / G ** 2;
+            };
+
+            let x1 = 0.5; // Initial guess
+            let tolerance = 1e-6;
+            let maxIterations = 100;
+            let iterations = 0;
+            while (Math.abs(fn(x1)) > tolerance && iterations < maxIterations) {
+                x1 = x1 - fn(x1) / (fn(x1 + 1e-6) - fn(x1)) * 1e-6; // Numerical derivative
+                iterations++;
+            }
+
+            if (iterations === maxIterations) {
+                alert("Failed to converge to a solution for x1.");
+                return;
+            }
+
+            // Terminal velocity and drag coefficient
+            const terminalVelocity = (d, rho_p, rho_f, mu) => {
+                const Ar = d ** 3 * rho_f * (rho_p - rho_f) * 9.81 / mu ** 2;
+                const RepFn = (Rep) => {
+                    return 24 * Rep * (1 + 0.173 * Rep ** 0.657) + 0.143 * Rep ** 2 / (1 + 8710 * Rep ** -1.09) - (4 / 3) * Ar;
+                };
+
+                let Rep = 0.2; // Initial guess for Rep
+                iterations = 0;
+                while (Math.abs(RepFn(Rep)) > tolerance && iterations < maxIterations) {
+                    Rep = Rep - RepFn(Rep) / (RepFn(Rep + 1e-6) - RepFn(Rep)) * 1e-6; // Numerical derivative
+                    iterations++;
+                }
+
+                if (iterations === maxIterations) {
+                    alert("Failed to converge to a solution for particle Reynolds number.");
+                    return [NaN, NaN];
+                }
+
+                const Cd = (4 / 3) * Ar / Rep ** 2;
+                const UT = Rep * mu / (rho_f * d);
+                return [UT, Cd];
+            };
+
+            const [UT, Cd] = terminalVelocity(d, particleDensity, fluidDensity, fluidViscosity);
+
+            // Choking velocity
+            const chokingVelocity = (G / (particleDensity * (1 - x1)) + UT) * x1;
+
+            // Display results
+            document.getElementById('results').innerHTML = `
+                <div class="result-item">
+                    <label>Pipe Voidage at Choking Velocity:</label>
+                    <span>${x1.toFixed(4)}</span>
+                </div>
+                <div class="result-item">
+                    <label>Particle Terminal Velocity (m/s):</label>
+                    <span>${UT.toFixed(4)}</span>
+                </div>
+                <div class="result-item">
+                    <label>Choking Velocity (m/s):</label>
+                    <span>${chokingVelocity.toFixed(4)}</span>
+                </div>
+            `;
+        }
+    </script>
+</head>
+<body>
+    <h1>Choking Velocity Calculator</h1>
+    <form onsubmit="event.preventDefault(); calculateChokingVelocity();">
+        <div class="form-group">
+            <label for="massTransferRate">Mass Transfer Rate (kg/h):</label>
+            <input type="number" id="massTransferRate" value="2000" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="particleSize">Average Particle Diameter (mm):</label>
+            <input type="number" id="particleSize" value="0.5" step="0.01" required>
+        </div>
+        <div class="form-group">
+            <label for="particleDensity">Density of Particles (kg/m³):</label>
+            <input type="number" id="particleDensity" value="1800" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="pipeLength">Pipe Length (m):</label>
+            <input type="number" id="pipeLength" value="20" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="pipeDiameter">Pipe Diameter (mm):</label>
+            <input type="number" id="pipeDiameter" value="50" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="fluidViscosity">Fluid Viscosity (Pa·s):</label>
+            <input type="number" id="fluidViscosity" value="1.8e-5" step="1e-7" required>
+        </div>
+        <div class="form-group">
+            <label for="fluidDensity">Fluid Density (kg/m³):</label>
+            <input type="number" id="fluidDensity" value="1.2" step="0.1" required>
+        </div>
+        <div class="button-container">
+            <button type="submit">Calculate</button>
+        </div>
+    </form>
+    <div id="results"></div>
+</body>
+</html>
