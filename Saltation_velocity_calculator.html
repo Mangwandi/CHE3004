@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saltation Velocity Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .result-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            color: #333;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #fadbd8;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Saltation Velocity Calculator</h1>
+        
+        <div class="form-group">
+            <label for="massTransferRate">Mass transfer rate (kg/h):</label>
+            <input type="number" id="massTransferRate" step="any" value="500">
+        </div>
+        
+        <div class="form-group">
+            <label for="particleDiameter">Average Particle diameter (mm):</label>
+            <input type="number" id="particleDiameter" step="any" value="0.5">
+        </div>
+        
+        <div class="form-group">
+            <label for="particleDensity">Density of Particles (kg/m³):</label>
+            <input type="number" id="particleDensity" step="any" value="1800">
+        </div>
+        
+        <div class="form-group">
+            <label for="pipeLength">Pipe Length (m):</label>
+            <input type="number" id="pipeLength" step="any" value="20">
+        </div>
+        
+        <div class="form-group">
+            <label for="pipeDiameter">Pipe Diameter (mm):</label>
+            <input type="number" id="pipeDiameter" step="any" value="50">
+        </div>
+        
+        <div class="form-group">
+            <label for="fluidViscosity">Fluid Viscosity (Pa·s):</label>
+            <input type="number" id="fluidViscosity" step="any" value="1.8e-5">
+        </div>
+        
+        <div class="form-group">
+            <label for="fluidDensity">Fluid Density (kg/m³):</label>
+            <input type="number" id="fluidDensity" step="any" value="1.2">
+        </div>
+        
+        <button onclick="calculate()">Calculate</button>
+        <div class="error" id="errorMsg"></div>
+        
+        <div class="results" id="results">
+            <div class="result-item">
+                <div class="result-label">Saltation Velocity</div>
+                <div class="result-value" id="saltationVelocity">-</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Design Superficial Velocity</div>
+                <div class="result-value" id="designVelocity">-</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function calculate() {
+            try {
+                // Get input values
+                const massTransferRate = parseFloat(document.getElementById('massTransferRate').value);
+                const particleSize = parseFloat(document.getElementById('particleDiameter').value);
+                const particleDensity = parseFloat(document.getElementById('particleDensity').value);
+                const pipeLength = parseFloat(document.getElementById('pipeLength').value);
+                const pipeDiameter = parseFloat(document.getElementById('pipeDiameter').value);
+                const mu = parseFloat(document.getElementById('fluidViscosity').value);
+                const rhoF = parseFloat(document.getElementById('fluidDensity').value);
+                
+                // Validate inputs
+                if (isNaN(massTransferRate) || isNaN(particleSize) || isNaN(particleDensity) || 
+                    isNaN(pipeLength) || isNaN(pipeDiameter) || isNaN(mu) || isNaN(rhoF)) {
+                    showError('Please enter valid numbers for all fields');
+                    return;
+                }
+                
+                if (pipeDiameter <= 0 || particleSize <= 0 || rhoF <= 0) {
+                    showError('Diameter, particle size, and density values must be positive');
+                    return;
+                }
+                
+                // Hide error
+                document.getElementById('errorMsg').style.display = 'none';
+                
+                // Convert units
+                const D = pipeDiameter * 0.001;  // pipe diameter in metres
+                const d = particleSize * 0.001;  // average particle diameter in metres
+                const Mp = massTransferRate / 3600;  // solids delivery rate in kg/s
+                
+                // Calculate saltation velocity
+                const alpha = 1440 * d + 1.96;
+                const beta = 1100 * d + 2.5;
+                
+                // Using logarithms to avoid overflow with large numbers
+                const logNumerator = Math.log10(4 * Mp) + alpha + 
+                                    (0.5 * beta) * Math.log10(9.81) + 
+                                    (0.5 * beta - 2) * Math.log10(D);
+                const logDenominator = Math.log10(Math.PI * rhoF);
+                const logResult = (logNumerator - logDenominator) / (beta + 1);
+                const USalt = Math.pow(10, logResult);
+                
+                // Calculate design superficial velocity
+                const designVelocity = USalt * 1.5;
+                
+                // Check if results are valid
+                if (!isFinite(USalt) || isNaN(USalt)) {
+                    showError('Calculation resulted in invalid values. Please check your inputs.');
+                    return;
+                }
+                
+                // Display results
+                document.getElementById('saltationVelocity').textContent = USalt.toFixed(2) + ' m/s';
+                document.getElementById('designVelocity').textContent = designVelocity.toFixed(2) + ' m/s';
+                
+            } catch (error) {
+                showError('An error occurred during calculation: ' + error.message);
+                console.error(error);
+            }
+        }
+        
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+        }
+
+        // Allow pressing Enter to calculate
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculate();
+            }
+        });
+    </script>
+</body>
+</html>
